@@ -33,65 +33,57 @@ explanatory2_baccarat = 'The players have been participating in same games, play
 
 conclusion = 'These players revealed signs of opposite betting. Please let us know if any further assistance is required.'
 
-document = Document('Ezugi_template_Opposite players.docx')
+#Adding Function
 
-#Essential functions before main function
+lista = []
 
-#Adding 1st/2nd Names on the cover page
-
-run0 = document.paragraphs[13].add_run(' ' + os.environ['USERNAME'])
-font0 = run0.font
-font0.size = Pt(15)
-
-if os.environ['USERNAME'] == 'Aleksandrs':
-    run01 = document.paragraphs[13].add_run(' Karsonis')
-    font01 = run01.font
-    font01.size = Pt(14)    
-    if os.environ['USERNAME'] == 'Arturs':
-        run02 = document.paragraphs[13].add_run(' Lusis')
-        font02 = run01.font
-        font02.size = Pt(14)
-        if os.environ['USERNAME'] == 'Alina':
-            run02 = document.paragraphs[13].add_run(' Heifeca')
-            font02 = run01.font
-            font02.size = Pt(14)        
-
-run2 = document.paragraphs[15].add_run(time.strftime(" %d.%m.%y"))
-font2 = run2.font
-font2.size = Pt(14)
-
-#cell declaration
-
-table0 = document.tables[0] #Top Cell
-cell011 = table0.cell(1,1)
-
-table1 = document.tables[1] #Body Cell
-cell110 = table1.cell(1,0)
-
-table2 = document.tables[2] #Final cell
-cell210 = table2.cell(1,0)
-
-table1_inside_cell110 = cell110.tables[0] #Table inside cell
-
-uid_cell = table1_inside_cell110.cell(1,0)
-screen_name_cell = table1_inside_cell110.cell(1,1)
-turnover_cell = table1_inside_cell110.cell(1,2)
-net_cell = table1_inside_cell110.cell(1,3)
-margin_cell = table1_inside_cell110.cell(1,4)
-turnover_eur_cell = table1_inside_cell110.cell(2,2)
-net_eur_cell = table1_inside_cell110.cell(2,3)
-
-uid2_cell = table1_inside_cell110.cell(3,0)
-screen_name2_cell = table1_inside_cell110.cell(3,1)
-turnover2_cell = table1_inside_cell110.cell(3,2)
-net2_cell = table1_inside_cell110.cell(3,3)
-margin2_cell = table1_inside_cell110.cell(3,4)
-turnover2_eur_cell = table1_inside_cell110.cell(4,2)
-net2_eur_cell = table1_inside_cell110.cell(4,3)
+counter = 0
+def list_append(event):
+    global counter
+    lista.append(link_entry.get())
+    link_entry.delete(0, END)
+    counter += 1
+    link_label_var.set('BO Link  ' + str(counter))
 
 #Main Function
 
 def main_function(event):
+    
+    document = Document('Ezugi_template_Opposite players.docx')
+    
+    #Essential functions before main function
+    
+    #Adding 1st/2nd Names on the cover page
+    
+    if os.environ['USERNAME'] == 'Aleksandrs':
+        run01 = document.paragraphs[13].add_run(' Aleksandrs Karsonis')
+        font01 = run01.font
+        font01.size = Pt(14)    
+        if os.environ['USERNAME'] == 'Arturs':
+            run02 = document.paragraphs[13].add_run(' Arturs Lusis')
+            font02 = run01.font
+            font02.size = Pt(14)
+            if os.environ['USERNAME'] == 'Alina':
+                run02 = document.paragraphs[13].add_run(' Alina Heifeca')
+                font02 = run01.font
+                font02.size = Pt(14)        
+    
+    run2 = document.paragraphs[15].add_run(time.strftime(" %d.%m.%y"))
+    font2 = run2.font
+    font2.size = Pt(14)
+    
+    #cell declaration
+    
+    table0 = document.tables[0] #Top Cell
+    cell011 = table0.cell(1,1)
+    
+    table1 = document.tables[1] #Body Cell
+    cell110 = table1.cell(1,0)
+    
+    table2 = document.tables[2] #Final cell
+    cell210 = table2.cell(1,0)
+    
+    table1_inside_cell110 = cell110.tables[0] #Table inside cell
     
     global intro
     global explanatory1
@@ -123,133 +115,74 @@ def main_function(event):
                    data=login_data, 
                    headers={'Referer': 
                             'https://bo.livetables.io/office.php?page=login'})
-            page = c.get(link_entry.get())
+        
+        for link in lista:
+            page = c.get(link)
+            soup = BeautifulSoup(page.content, 'html.parser')
             
-            # All P2 manipulations
+            #Parsing Operator ID
+            operator_id = str(soup.find('img', {'height' : '20'}))
+            operator_id = ((operator_id.split('ID: '))[1].split(' " width="20"/>')[0])
+            operator_id = operator_id.replace('\n', '')
+            operator_id = operator_id.replace('  ', ' ')
+            operator_id = operator_id[:-1]
             
-            if link_entry2.get() != '':
-                page2 = c.get(link_entry2.get())
-                soup2 = BeautifulSoup(page2.content, 'html.parser')
-                
-                #Parsing Operator ID for player 2
-                
-                operator_id2 = str(soup2.find('img', {'height' : '20'}))
-                try:
-                    operator_id2 = ((operator_id2.split('ID: '))[1].split(' " width="20"/>')[0])
-                except IndexError:
-                    print('incorrect link provided')
-                operator_id2 = operator_id2.replace('\n', '')
-                operator_id2 = operator_id2.replace('  ', ' ')
-                operator_id2 = operator_id2[:-1]
-                
-                #Parsing uid2
-                
-                uid2 = str(soup2.find('input', {'name' : 'PlayerDisplay'}))
-                uid2 = uid2.split('" type="text" value="')[1].split('"/>')[0]
-                
-                #Parsing screen name2
-                
-                screen_name2 = str(soup2.find('img', {'width' : '25'}))
-                screen_name2 = screen_name2.split(' - ')[1].split(' Operator: ')[0]
-                screen_name2 = screen_name2.replace('\n', '')
-                
-                #Parsing currency2
-                
-                currency2 = str(soup2.find('td', {'class' : 'grid_cell SessionCurrency'}))
-                currency2 = currency2.split('title="')[1].split('"><div id="SessionCurrency"')[0]
-                
-                #Parsing turnover2
-                
-                turnover2 = str(soup2.find('td', {'class' : 'grid_cell BetSum'}))
-                turnover2 = turnover2.split('title="')[1].split('"><div id="BetSum"')[0]
-                
-                #Parsing payoff2
-                
-                payoff2 = str(soup2.find('td', {'class' : 'grid_cell WinSum'}))
-                payoff2 = payoff2.split('title="')[1].split('"><div id="WinSum"')[0]
-                
-                #Calculating net2 result + margin2
-                
-                net2 = float(payoff2) - float(turnover2)
-                margin2 = float(net2) / float(turnover2)
-                
-                #Formatting values2
-                
-                turnover2 = "{:5,.2f}".format(float(turnover2))
-                net2 = "{:5,.2f}".format(net2)
-                margin2 = "{:5,.2f}".format(margin2)            
-                
-                #Table P2 
-                
-                uid2_cell.text = uid2
-                screen_name2_cell.text = screen_name2
-                turnover2_cell.text = currency2 + ' ' + str(turnover2)
-                net2_cell.text = currency2 + ' ' + str(net2)
-                margin2_cell.text = str(margin2) + ' %'
-                
-                #If main currency not EURO P2
-                
-                if currency2 != 'EUR':
-                    turnover2_eur = str(soup2.find('td', {'class' : 'grid_cell BetUSD'}))
-                    turnover2_eur = turnover2_eur.split('title="')[1].split('"><div id="BetUSD"')[0]
-                    
-                    payoff2_eur = str(soup2.find('td', {'class' : 'grid_cell WinUSD'}))
-                    payoff2_eur = payoff2_eur.split('title="')[1].split('"><div id="WinUSD"')[0]
-                    
-                    net2_eur = float(payoff2_eur) - float(turnover2_eur)
-                    
-                    net2_eur = "{:5,.2f}".format(net2_eur)
-                    turnover2_eur = "{:5,.2f}".format(float(turnover2_eur))
-                    
-                    turnover2_eur_cell.text = 'EUR ' + str(turnover2_eur)
-                    net2_eur_cell.text = 'EUR ' +  str(net2_eur)
-    
-        soup = BeautifulSoup(page.content, 'html.parser')
-        
-        #Parsing Operator ID
-        operator_id = str(soup.find('img', {'height' : '20'}))
-        operator_id = ((operator_id.split('ID: '))[1].split(' " width="20"/>')[0])
-        operator_id = operator_id.replace('\n', '')
-        operator_id = operator_id.replace('  ', ' ')
-        operator_id = operator_id[:-1]
-        
-        #Parsing UID
-        
-        uid = str(soup.find('input', {'name' : 'PlayerDisplay'}))
-        uid = uid.split('" type="text" value="')[1].split('"/>')[0]
-        
-        #Parsing screen name
-        
-        screen_name = str(soup.find('img', {'width' : '25'}))
-        screen_name = screen_name.split(' - ')[1].split(' Operator: ')[0]
-        screen_name = screen_name.replace('\n', '')
-        
-        #Parsing currency
-        
-        currency = str(soup.find('td', {'class' : 'grid_cell SessionCurrency'}))
-        currency = currency.split('title="')[1].split('"><div id="SessionCurrency"')[0]
-        
-        #Parsing Turnover
-        
-        turnover = str(soup.find('td', {'class' : 'grid_cell BetSum'}))
-        turnover = turnover.split('title="')[1].split('"><div id="BetSum"')[0]
-        
-        #Parsing Payoff
-        
-        payoff = str(soup.find('td', {'class' : 'grid_cell WinSum'}))
-        payoff = payoff.split('title="')[1].split('"><div id="WinSum"')[0]
-        
-        #Calculating Net result + Margin
-        
-        net = float(payoff) - float(turnover)
-        margin = float(net) / float(turnover)
-        
-        #Formatting values
-        
-        turnover = "{:5,.2f}".format(float(turnover))
-        net = "{:5,.2f}".format(net)
-        margin = "{:5,.2f}".format(margin)
-        
+            #Parsing UID
+            uid = str(soup.find('input', {'name' : 'PlayerDisplay'}))
+            uid = uid.split('" type="text" value="')[1].split('"/>')[0]
+            
+            #Parsing screen name
+            screen_name = str(soup.find('img', {'width' : '25'}))
+            screen_name = screen_name.split(' - ')[1].split(' Operator: ')[0]
+            screen_name = screen_name.replace('\n', '')
+            
+            #Parsing currency
+            currency = str(soup.find('td', {'class' : 'grid_cell SessionCurrency'}))
+            currency = currency.split('title="')[1].split('"><div id="SessionCurrency"')[0]
+            
+            #Parsing Turnover
+            turnover = str(soup.find('td', {'class' : 'grid_cell BetSum'}))
+            turnover = turnover.split('title="')[1].split('"><div id="BetSum"')[0]
+            
+            #Parsing Payoff
+            payoff = str(soup.find('td', {'class' : 'grid_cell WinSum'}))
+            payoff = payoff.split('title="')[1].split('"><div id="WinSum"')[0]
+            
+            #Calculating Net result + Margin
+            net = float(payoff) - float(turnover)
+            margin = float(net) / float(turnover) * 100
+            
+            #Formatting values
+            turnover = "{:5,.2f}".format(float(turnover))
+            net = "{:5,.2f}".format(net)
+            margin = "{:5,.2f}".format(margin) + '%'
+            
+            #Getting EURO values
+            turnover_eur = str(soup.find('td', {'class' : 'grid_cell BetUSD'}))
+            turnover_eur = turnover_eur.split('title="')[1].split('"><div id="BetUSD"')[0]
+            
+            payoff_eur = str(soup.find('td', {'class' : 'grid_cell WinUSD'}))
+            payoff_eur = payoff_eur.split('title="')[1].split('"><div id="WinUSD"')[0]
+            
+            net_eur = float(payoff_eur) - float(turnover_eur)
+            
+            net_eur = "{:5,.2f}".format(net_eur)
+            turnover_eur = "{:5,.2f}".format(float(turnover_eur))
+
+            #Adding to table
+            
+            cells = table1_inside_cell110.add_row().cells
+            cells[0].text = uid
+            cells[1].text = screen_name
+            cells[2].text = currency + ' ' + turnover
+            cells[3].text = currency + ' ' + net
+            cells[4].text = margin
+            
+            if currency != 'EUR':
+                cells_eur = table1_inside_cell110.add_row().cells
+                cells_eur[2].text = 'EUR ' + turnover_eur
+                cells_eur[3].text = 'EUR ' + net_eur
+
         #Adding Text
         
         cell011.text = operator_id
@@ -266,31 +199,6 @@ def main_function(event):
             intro = intro.replace("players'", "player's")
     
         intro_paragraph.text = intro
-        
-        #Table P1
-        
-        uid_cell.text = uid
-        screen_name_cell.text = screen_name
-        turnover_cell.text = currency + ' ' + str(turnover)
-        net_cell.text = currency + ' ' + str(net)
-        margin_cell.text = str(margin) + ' %'
-        
-        #If main currency not EURO
-        
-        if currency != 'EUR':
-            turnover_eur = str(soup.find('td', {'class' : 'grid_cell BetUSD'}))
-            turnover_eur = turnover_eur.split('title="')[1].split('"><div id="BetUSD"')[0]
-            
-            payoff_eur = str(soup.find('td', {'class' : 'grid_cell WinUSD'}))
-            payoff_eur = payoff_eur.split('title="')[1].split('"><div id="WinUSD"')[0]
-            
-            net_eur = float(payoff_eur) - float(turnover_eur)
-            
-            net_eur = "{:5,.2f}".format(net_eur)
-            turnover_eur = "{:5,.2f}".format(float(turnover_eur))
-            
-            turnover_eur_cell.text = 'EUR ' + str(turnover_eur)
-            net_eur_cell.text = 'EUR ' +  str(net_eur)
         
         #2nd Paragraph
         
@@ -353,14 +261,18 @@ def main_function(event):
             cell210.text = conclusion
     
     except IndexError:
-        generate_text_var.set("WRONG LINK!  Restart program!")
+        generate_text_var.set("WRONG LINK! TRY AGAIN!")
     
     #Save Docx
     
     try:
-        document.save('Opposite betting Report ' + operator_id + time.strftime(" %d.%m.%y") + '.docx')
+        document.save(
+            'Opposite betting Report ' + operator_id + time.strftime(
+                " %d.%m.%y") + '.docx')
     except PermissionError:
-        document.save('Opposite betting Report ' + operator_id + time.strftime(" %d.%m.%y") + '(1).docx')
+        document.save(
+            'Opposite betting Report ' + operator_id + time.strftime(
+                " %d.%m.%y") + '(1).docx')
 
 #Tkinter Architecture
 
@@ -419,24 +331,26 @@ frame4.pack()
 link_label_var = StringVar(frame4)
 link_label = Label(frame4, 
                    textvariable=link_label_var)
-link_label_var.set("BO Link P1")
+link_label_var.set("BO Link")
 
-link_label.pack(padx=132, pady=7, side=LEFT)
+link_label.pack(padx=146, pady=7, side=LEFT)
 
 link_entry = Entry(frame4)
-link_entry.pack(padx=108, pady=7, side=RIGHT)
+link_entry.pack(padx=105, pady=7, side=RIGHT)
 
-#Field to put link from BO with player name and Brand P2
+#ADD TO LIST
 
-frame5 = Frame(root)
-frame5.pack()
+frame_last = Frame(root)
+frame_last.pack()
 
-link_label2 = Label(frame5, 
-                   text='BO link P2')
-link_label2.pack(padx=133, side=LEFT)
+add_text_var = StringVar(frame_last)
 
-link_entry2 = Entry(frame5)
-link_entry2.pack(padx=108, side=RIGHT)
+add = Button(frame_last, 
+                  textvariable=add_text_var)
+add_text_var.set("Add Link")
+
+add.pack(fill = X, padx = 130, pady = 10)
+add.bind('<Button-1>', list_append)
 
 #Generate
 
